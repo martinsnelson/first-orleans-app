@@ -7,6 +7,16 @@ builder.Host.UseOrleans(siloBuilder =>
 {
     /// SiloBuilder - cria um silo que pode armazenar suas granularidades. Nesse cenário, você usará um cluster localhost
     siloBuilder.UseLocalhostClustering();
+    siloBuilder.AddMemoryGrainStorage("urls");
+    // siloBuilder.AddAzureBlobGrainStorage("urls",
+    //     // Recommended: Connect to Blob Storage using DefaultAzureCredential
+    //     options =>
+    //     {
+    //         options.ConfigureBlobServiceClient(new Uri("https://<your-account-name>.blob.core.windows.net"),
+    //             new DefaultAzureCredential());
+    //     });
+        // Connect to Blob Storage using Connection strings
+        // options => options.ConfigureBlobServiceClient(connectionString));
 });
 
 var app = builder.Build();
@@ -16,6 +26,8 @@ var app = builder.Build();
 /// variável chamada grainFactory
 var grainFactory = app.Services.GetRequiredService<IGrainFactory>();
 
+
+/// Endpoints
 app.MapGet("/", () => "Hello World!");
 
 app.MapGet("/shorten/{*path}", async (IGrainFactory grains, HttpRequest request, string path) =>

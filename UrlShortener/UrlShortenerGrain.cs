@@ -1,18 +1,25 @@
+using Orleans.Runtime;
+
 /// <summary>
 /// Grain - 
 /// </summary>
 public class UrlShortenerGrain : Grain, IUrlShortenerGrain
 {
-    private KeyValuePair<string, string> _cache;
+    private readonly IPersistentState<KeyValuePair<string, string>> _cache;
 
-    public Task SetUrl(string shortenedRouteSegment, string fullUrl)
+    public UrlShortenerGrain([PersistentState(stateName: "url", storageName: "urls")]IPersistentState<KeyValuePair<string, string>> state)
     {
-        _cache = new KeyValuePair<string, string>(shortenedRouteSegment, fullUrl);
-        return Task.CompletedTask;
+        _cache = state;
     }
 
-    public Task<string?> GetUrl()
+    public async Task SetUrl(string shortenedRouteSegment, string fullUrl)
     {
-        return Task.FromResult(_cache.Value);
+        _cache.State = new KeyValuePair<string, string>(shortenedRouteSegment, fullUrl);
+        await _cache.WriteStateAsync();
+    }
+
+    public Task<string> GetUrl()
+    {
+        return Task.FromResult(_cache.State.Value);
     }
 }
